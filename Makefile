@@ -45,9 +45,14 @@ bin/test_%: tests/test_%.cpp $(SRC) | bin build db
 	$(CXX) $(CXXFLAGS) $(COVFLAGS) $^ -o $@ $(LDFLAGS)
 
 # ── Покрытие ───────────────────────────────────────────────────────────────────
-coverage: test
-	gcov -r src/*.cpp
-	@echo "Для HTML-отчёта запустите: lcov + genhtml (см. README)"
+coverage: clean test
+	@echo "=== Генерация отчёта о покрытии ==="
+	# Переходим в папку build, где лежат .gcno и .gcda файлы
+	cd build && gcov -o . ../src/*.cpp
+	# Копируем .gcov файлы в корневую директорию
+	mv build/*.gcov . 2>/dev/null || true
+	@echo "Отчёт о покрытии сохранён в .gcov файлах"
+	@gcov -r src/*.cpp 2>/dev/null | grep -A 5 "File" || true
 
 # ── Очистка ────────────────────────────────────────────────────────────────────
 clean:
